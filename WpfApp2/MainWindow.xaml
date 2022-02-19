@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="62"/>
@@ -35,15 +35,22 @@
         </Grid>
 
         <DataGrid Grid.Row="1" CanUserAddRows="False" ItemsSource="{Binding Users}" AutoGenerateColumns="False" IsEnabled="{Binding IsAdmin}" SelectedItem="{Binding User}" >
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Логин" Binding="{Binding Login, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTemplateColumn Header="Логин">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Login}" Background="Transparent" IsReadOnly="{Binding editLogin}" BorderBrush="Transparent" BorderThickness="0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Пароль" Binding="{Binding Password, UpdateSourceTrigger=LostFocus}" x:Name="pass"/>
                 <DataGridTextColumn Header="Имя" Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"/>
                 <DataGridTextColumn Header="Email" Binding="{Binding Email, UpdateSourceTrigger=LostFocus}"/>
                 <DataGridTemplateColumn Header="Роли">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ListBox ItemsSource="{Binding Rols, UpdateSourceTrigger=LostFocus}" MouseDoubleClick="ListBox_MouseDoubleClick"/>
+                            <ListBox ItemsSource="{Binding Rols, UpdateSourceTrigger=LostFocus}" MouseDoubleClick="ListBox_MouseDoubleClick" BorderBrush="Transparent"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

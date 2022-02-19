@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,14 +127,14 @@ namespace WpfApp2
         private void button_Click_1(object sender, RoutedEventArgs e)
         {
             button.IsEnabled = false;
-            
+
             var newUsers = Users.Where(w => w.stasus == CreateOrUpdate.Create).ToList();
             try
             {
                 connection.Open();
                 for (int i = 0; i < newUsers.Count; i++)
                 {
-                    if (!(string.IsNullOrEmpty(newUsers[i].Login) || string.IsNullOrEmpty(newUsers[i].Name) || string.IsNullOrEmpty(newUsers[i].Password)))
+                    if (!(string.IsNullOrEmpty(newUsers[i].Login) || string.IsNullOrEmpty(newUsers[i].Name) || string.IsNullOrEmpty(newUsers[i].Password) || string.IsNullOrEmpty(newUsers[i].Email)))
                     {
                         SqlCommand command = new SqlCommand($"INSERT INTO Users (Login, Name, Password, Email) VALUES (@login, @name, @pass, @email)", connection);
 
@@ -144,6 +145,8 @@ namespace WpfApp2
 
                         if (command.ExecuteNonQuery() == 1)
                         {
+                            newUsers[i].stasus = CreateOrUpdate.Update;
+                            newUsers[i].editLogin = true;
                             for (int j = 0; j < newUsers[i].Rols?.Count; j++)
                             {
                                 command = new SqlCommand($"INSERT INTO User_Role(UserID, RoleID) VALUES ((SELECT ID FROM Users WHERE Login = @login), (SELECT ID FROM Roles WHERE RoleName = @roleId))", connection);
@@ -151,7 +154,6 @@ namespace WpfApp2
                                 command.Parameters.Add("@roleId", SqlDbType.NVarChar).Value = newUsers[i].Rols[j];
                                 if (command.ExecuteNonQuery() != 1)
                                     throw new Exception($"Не удалось добавить роли пользователю \"{newUsers[i].Login}\"");
-                                newUsers[i].stasus = CreateOrUpdate.Update;
                             }
                         }
                         else

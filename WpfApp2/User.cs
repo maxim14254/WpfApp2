@@ -19,7 +19,6 @@ namespace WpfApp2
     }
     public class User : INotifyPropertyChanged
     {
-
         public CreateOrUpdate stasus;
         string id;
         string login;
@@ -140,6 +139,26 @@ namespace WpfApp2
             }
         }
 
+        public bool editLogin 
+        {
+            get
+            {
+                if (stasus == CreateOrUpdate.Update) 
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            set
+            {
+                OnPropertyChanged(value);
+            }
+
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -150,53 +169,55 @@ namespace WpfApp2
                 var connection = new SqlConnection(connectionString);
                 try
                 {
-                    if (propertyName == "Login" || propertyName == "Email")
+                    if (propertyName != "editLogin")
                     {
-                        string query = $"SELECT {propertyName} FROM Users";
-                        var myCommand = new SqlCommand(query, new SqlConnection(connectionString));
-                        SqlDataAdapter sqlData = new SqlDataAdapter();
-                        sqlData.SelectCommand = myCommand;
-                        var data = new DataTable();
-                        sqlData.Fill(data);
-                        
-                        if (MainWindow.GetList(data).ConvertAll(obj => obj[0].ToString()).Contains(value.ToString()))
-                            throw new Exception($"Данный {propertyName} уже существует, введите другой");
-                    }
-
-                    if (this.stasus == CreateOrUpdate.Update)
-                    {
-                        connection.Open();
-                        SqlCommand command;
-                        if (propertyName == "Rols")
+                        if (propertyName == "Login" || propertyName == "Email")
                         {
-                            command = new SqlCommand($"DELETE FROM User_Role WHERE UserID = @id", connection);
-                            command.Parameters.Add("@id", SqlDbType.VarChar).Value = id;
-                            command.ExecuteNonQuery();
-                            for (int i = 0; i < Rols.Count; i++)
+                            string query = $"SELECT {propertyName} FROM Users";
+                            var myCommand = new SqlCommand(query, new SqlConnection(connectionString));
+                            SqlDataAdapter sqlData = new SqlDataAdapter();
+                            sqlData.SelectCommand = myCommand;
+                            var data = new DataTable();
+                            sqlData.Fill(data);
+
+                            if (MainWindow.GetList(data).ConvertAll(obj => obj[0].ToString()).Contains(value.ToString()))
+                                throw new Exception($"Данный {propertyName} уже существует, введите другой");
+                        }
+
+                        if (this.stasus == CreateOrUpdate.Update)
+                        {
+                            connection.Open();
+                            SqlCommand command;
+                            if (propertyName == "Rols")
                             {
-                                command = new SqlCommand($"DECLARE @rolesId INT " +
-                                    $"SELECT @rolesId = (SELECT Roles.ID FROM Roles WHERE RoleName = @roleName) " +
-                                    $"INSERT INTO User_Role VALUES(@id, @rolesId)", connection);
-
-                                command.Parameters.Add("@roleName", SqlDbType.NVarChar).Value = Rols[i];
-                                command.Parameters.Add("@id", SqlDbType.VarChar).Value = id;
+                                command = new SqlCommand($"DELETE FROM User_Role WHERE UserID = (SELECT ID FROM Users WHERE Login = @login)", connection);
+                                command.Parameters.Add("@login", SqlDbType.VarChar).Value = Login;
                                 command.ExecuteNonQuery();
+                                for (int i = 0; i < Rols.Count; i++)
+                                {
+                                    command = new SqlCommand($"DECLARE @rolesId INT " +
+                                        $"SELECT @rolesId = (SELECT Roles.ID FROM Roles WHERE RoleName = @roleName) " +
+                                        $"INSERT INTO User_Role VALUES((SELECT ID FROM Users WHERE Login = @login), @rolesId)", connection);
+
+                                    command.Parameters.Add("@roleName", SqlDbType.NVarChar).Value = Rols[i];
+                                    command.Parameters.Add("@login", SqlDbType.VarChar).Value = Login;
+                                    command.ExecuteNonQuery();
+                                }
                             }
+                            else
+                            {
+                                command = new SqlCommand($"UPDATE Users SET {propertyName} = @val WHERE ID = @id", connection);
+
+                                command.Parameters.Add("@val", SqlDbType.NVarChar).Value = value;
+                                command.Parameters.Add("@id", SqlDbType.VarChar).Value = id;
+
+                                if (command.ExecuteNonQuery() != 1)
+                                    throw new Exception($"Не удалось изменить {propertyName}");
+                            }
+
+                            connection.Close();
                         }
-                        else
-                        {
-                            command = new SqlCommand($"UPDATE Users SET {propertyName} = @val WHERE ID = @id", connection);
-
-                            command.Parameters.Add("@val", SqlDbType.NVarChar).Value = value;
-                            command.Parameters.Add("@id", SqlDbType.VarChar).Value = id;
-
-                            if (command.ExecuteNonQuery() != 1)
-                                throw new Exception($"Не удалось изменить {propertyName}");
-                        }
-
-                        connection.Close();
                     }
-
                     PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
                     return true;
                 }
