@@ -1,0 +1,59 @@
+﻿<Window x:Class="WpfApp2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp2"
+        mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="62"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="125"/>
+                <ColumnDefinition Width="125"/>
+                <ColumnDefinition Width="949*"/>
+            </Grid.ColumnDefinitions>
+            <GroupBox Grid.Column="0" Margin="5" Width="Auto" Header="Вы вошли как">
+                <Label x:Name="label"  Content="{Binding ThisRol}" />
+            </GroupBox>
+
+            <Button Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="5" IsEnabled="{Binding IsAdmin}" VerticalAlignment="Stretch" Click="button_Click">
+                <TextBlock Text="Добавить пользователя" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+            </Button>
+            
+            <Button x:Name="button" Grid.Column="2" HorizontalAlignment="Stretch" Height="Auto" Margin="5" IsEnabled="False" VerticalAlignment="Stretch" Click="button_Click_1" >
+                <TextBlock Text="Сохранить пользователя(ей)" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+            </Button>
+        </Grid>
+
+        <DataGrid Grid.Row="1" CanUserAddRows="False" ItemsSource="{Binding Users}" AutoGenerateColumns="False" IsEnabled="{Binding IsAdmin}" SelectedItem="{Binding User}" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Логин" Binding="{Binding Login, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTextColumn Header="Пароль" Binding="{Binding Password, UpdateSourceTrigger=LostFocus}" x:Name="pass"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTextColumn Header="Email" Binding="{Binding Email, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTemplateColumn Header="Роли">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ListBox ItemsSource="{Binding Rols, UpdateSourceTrigger=LostFocus}" MouseDoubleClick="ListBox_MouseDoubleClick"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Удалить" Click="MenuItem_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+    </Grid>
+</Window>
+
